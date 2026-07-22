@@ -1,8 +1,13 @@
-<img src="./landing-icon.png" width="120" align="right" alt="Foldfinch logo" />
+<h1 align="center">Foldfinch</h1>
+<p align="center">
+ <img src="./landing-icon.png" width="150"  />
+</p>
 
-# Foldfinch
+<p align="center">
+<strong>PDF chores made easy.</strong>
+</p>
 
-A small, cross-platform desktop app for everyday PDF chores:
+<br>
 
 - **Remove pages** from a PDF
 - **Combine** multiple PDFs into one
