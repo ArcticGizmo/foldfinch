@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Foldfinch.App.ViewModels"
+             x:Class="Foldfinch.App.Views.EditorView"
+             x:DataType="vm:EditorViewModel">
+
+    <Panel Background="{StaticResource CanvasBgBrush}">
+        <!-- Empty state: shown until a document is opened. -->
+        <StackPanel IsVisible="{Binding IsEmpty}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Spacing="8" MaxWidth="420">
+            <TextBlock Text="No PDF open" FontSize="20" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" Foreground="{StaticResource TitleBrush}" />
+            <TextBlock Text="Open a PDF to remove, reorder, or rotate its pages — or add several to combine them into one."
+                       TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+        </StackPanel>
+
+        <!-- Page grid goes here from M3 onward. -->
+    </Panel>
+</UserControl>
