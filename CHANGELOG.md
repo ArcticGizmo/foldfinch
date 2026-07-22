@@ -16,3 +16,5 @@ what's new after an update.
   document order, respecting per-page rotation.
 - Remove and reorder: multi-select (click / Ctrl+click / Shift+click), remove selected pages,
   drag-and-drop reordering, and multi-level undo/redo. Keyboard: Delete, Ctrl+A, Ctrl+Z, Ctrl+Y.
+- Combine PDFs: Add PDF appends another file's pages; when a document spans multiple files, each
+  page tile shows a colour-coded source chip so it's clear where every page came from.

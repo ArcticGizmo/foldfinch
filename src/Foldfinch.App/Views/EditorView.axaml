@@ -44,6 +44,16 @@
                     <DataTemplate DataType="vm:PageThumbnailViewModel">
                         <Border Classes="selband" Classes.selected="{Binding IsSelected}" CornerRadius="8" Padding="8" Margin="4">
                             <StackPanel Width="200" Spacing="6">
+                                <!-- Source chip: only shown when the document combines multiple files. -->
+                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center"
+                                            IsVisible="{Binding ShowSource}">
+                                    <Border Width="9" Height="9" CornerRadius="5" VerticalAlignment="Center"
+                                            Background="{Binding SourceColor}" />
+                                    <TextBlock Text="{Binding SourceLabel}" FontSize="11" MaxWidth="165"
+                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                               Foreground="{StaticResource MutedBrush}" />
+                                </StackPanel>
+
                                 <!-- The page. Fixed height keeps the grid tidy regardless of page aspect. -->
                                 <Border Classes="page" Classes.selected="{Binding IsSelected}"
                                         Background="#FFFFFF" CornerRadius="3" Height="260"

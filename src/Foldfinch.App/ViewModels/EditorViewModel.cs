@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Foldfinch.Core.Pdf;
@@ -13,6 +14,17 @@ namespace Foldfinch.App.ViewModels;
 /// </summary>
 public partial class EditorViewModel : ViewModelBase
 {
+    // Distinct swatch per source file (cycled) — used to tint the source chip when combining PDFs.
+    private static readonly IBrush[] SourcePalette =
+    [
+        new SolidColorBrush(Color.Parse("#2563EB")),
+        new SolidColorBrush(Color.Parse("#16A34A")),
+        new SolidColorBrush(Color.Parse("#DC2626")),
+        new SolidColorBrush(Color.Parse("#D97706")),
+        new SolidColorBrush(Color.Parse("#7C3AED")),
+        new SolidColorBrush(Color.Parse("#0891B2")),
+    ];
+
     private readonly AppServices _services;
     private PdfDocumentModel? _model;
 
@@ -338,6 +350,11 @@ public partial class EditorViewModel : ViewModelBase
         Pages.Clear();
         if (_model is not null)
         {
+            var showSource = _model.Sources.Count > 1;
+            var colorFor = _model.Sources
+                .Select((s, i) => (s.Id, Color: SourcePalette[i % SourcePalette.Length]))
+                .ToDictionary(x => x.Id, x => x.Color);
+
             var number = 1;
             foreach (var pageRef in _model.Pages)
             {
@@ -345,6 +362,9 @@ public partial class EditorViewModel : ViewModelBase
                 Pages.Add(new PageThumbnailViewModel(pageRef, source.Path, number++)
                 {
                     IsSelected = previouslySelected.Contains(pageRef),
+                    ShowSource = showSource,
+                    SourceLabel = source.DisplayName,
+                    SourceColor = showSource ? colorFor[source.Id] : null,
                 });
             }
         }

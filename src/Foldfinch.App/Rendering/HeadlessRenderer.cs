@@ -51,6 +51,16 @@ internal static class HeadlessRenderer
                 Capture(vm, Path.Combine(outDir, "main_selection.png"));
             }
 
+            // Combined state: open one PDF, add a second, so per-source chips appear.
+            var sample2 = Path.Combine(Path.GetTempPath(), "foldfinch-render", "appendix.pdf");
+            CreateSamplePdf(sample2, 3);
+            var combineServices = new AppServices(new QueueFileDialogs(sample, sample2));
+            var combined = new MainWindowViewModel(combineServices);
+            PumpUntilComplete(combined.Editor.OpenCommand.ExecuteAsync(null));
+            PumpUntilComplete(combined.Editor.AddPdfCommand.ExecuteAsync(null));
+            PumpUntilComplete(combined.Editor.LoadThumbnailsAsync());
+            Capture(combined, Path.Combine(outDir, "main_combined.png"));
+
             Console.WriteLine($"rendered to {Path.GetFullPath(outDir)}");
             return 0;
         }
@@ -102,6 +112,15 @@ internal static class HeadlessRenderer
     private sealed class SingleFileDialogs(string path) : IFileDialogService
     {
         public Task<string?> OpenPdfAsync(string title) => Task.FromResult<string?>(path);
+        public Task<string?> SavePdfAsync(string suggestedName) => Task.FromResult<string?>(null);
+    }
+
+    /// <summary>A file-dialog stub that returns successive preset paths from Open (open then add).</summary>
+    private sealed class QueueFileDialogs(params string[] paths) : IFileDialogService
+    {
+        private readonly Queue<string> _paths = new(paths);
+        public Task<string?> OpenPdfAsync(string title) =>
+            Task.FromResult<string?>(_paths.Count > 0 ? _paths.Dequeue() : null);
         public Task<string?> SavePdfAsync(string suggestedName) => Task.FromResult<string?>(null);
     }
 }

@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Foldfinch.App.Rendering;
@@ -19,6 +20,15 @@ public partial class PageThumbnailViewModel : ViewModelBase
 
     /// <summary>1-based position of this page in the working document.</summary>
     [ObservableProperty] private int _pageNumber;
+
+    /// <summary>Source-file name shown on the tile when the document combines more than one file.</summary>
+    public string SourceLabel { get; init; } = "";
+
+    /// <summary>Per-source colour swatch (shown alongside the label); null when there's a single source.</summary>
+    public IBrush? SourceColor { get; init; }
+
+    /// <summary>Whether to show the source chip (true only when the document has multiple sources).</summary>
+    public bool ShowSource { get; init; }
 
     /// <summary>The rendered thumbnail (null until loaded).</summary>
     [ObservableProperty] private Bitmap? _image;
