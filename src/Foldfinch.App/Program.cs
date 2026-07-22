@@ -17,10 +17,6 @@ internal static class Program
         if (args.Length > 0 && args[0] == "render")
             return HeadlessRenderer.RenderAll(args.Length > 1 ? args[1] : ".");
 
-        // `foldfinch gen-icon <dir>` regenerates the app icon assets (dev-time only).
-        if (args.Length > 0 && args[0] == "gen-icon")
-            return IconGenerator.Generate(args.Length > 1 ? args[1] : "src/Foldfinch.App/Assets");
-
         // `foldfinch check-update` runs the notify-only update check and prints the result.
         if (args.Length > 0 && args[0] == "check-update")
         {

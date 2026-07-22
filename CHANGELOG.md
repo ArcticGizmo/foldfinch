@@ -29,4 +29,5 @@ what's new after an update.
 - Friendlier errors: password-protected and damaged PDFs report a clear message instead of failing.
 - Packaging: Velopack-based installers for Windows and macOS via a tagged GitHub release, an
   update-available notice on launch, an About dialog with a manual update check, and a "what's new"
-  window after updating. App icon added.
+  window after updating. Goldfinch app + toolbar icon, generated from a source-of-truth SVG
+  (`foldfinch.svg`) via `tools/IconGen`.

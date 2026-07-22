@@ -30,10 +30,19 @@ Verify the update path headlessly with:
 foldfinch check-update
 ```
 
-## Regenerating the app icon
+## Regenerating the icons
 
-The icon assets (`src/Foldfinch.App/Assets/foldfinch.png` and `.ico`) are generated:
+The logo lives in a single source-of-truth vector, [`foldfinch.svg`](../foldfinch.svg). Every raster
+asset — the app/window icon, the toolbar icon, and the README header — is generated from it by the
+`tools/IconGen` console tool. After editing `foldfinch.svg`, regenerate and commit the results:
 
 ```
-dotnet run --project src/Foldfinch.App -- gen-icon src/Foldfinch.App/Assets
+powershell tools/gen-icons.ps1   # PowerShell
+tools\gen-icons.cmd              # cmd
+# or directly: dotnet run --project tools/IconGen -c Release
 ```
+
+This writes `src/Foldfinch.App/Assets/foldfinch.png` (256×256), `src/Foldfinch.App/Assets/foldfinch.ico`
+(multi-resolution 16–256), and `landing-icon.png` (512×512, for the README). The SVG is rendered
+through System.Drawing, which only runs on Windows; `tools/IconGen` is intentionally kept out of the
+solution build so nothing shipping depends on the renderer.

@@ -1,3 +1,5 @@
+<img src="./landing-icon.png" width="120" align="right" alt="Foldfinch logo" />
+
 # Foldfinch
 
 A small, cross-platform desktop app for everyday PDF chores:
