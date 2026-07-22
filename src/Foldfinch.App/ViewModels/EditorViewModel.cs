@@ -64,46 +64,55 @@ public partial class EditorViewModel : ViewModelBase
         _services = services;
     }
 
-    private bool HasDocument => _model is not null;
     private bool HasPages => PageCount > 0;
     private bool NotBusy => !IsBusy;
 
+    /// <summary>Adds one or more PDFs to the end of the document (also used for the first open).</summary>
     [RelayCommand(CanExecute = nameof(NotBusy))]
-    private async Task OpenAsync()
-    {
-        var path = await _services.FileDialogs.OpenPdfAsync("Open PDF");
-        if (path is null) return;
+    private Task AddPdf() => PromptAndAddAsync(insertIndex: null);
 
-        await Do(() => _services.Editor.Open(path), model =>
-        {
-            _model = model;
-            DocumentName = model.Sources[0].DisplayName;
-            IsDirty = false;
-            _undo.Clear();
-            _redo.Clear();
-            RebuildPages();
-            NotifyCommands();
-            Status = $"Opened {DocumentName}";
-        }, "Couldn't open that PDF");
-    }
+    /// <summary>Inserts one or more PDFs immediately before <paramref name="tile"/>.</summary>
+    [RelayCommand(CanExecute = nameof(NotBusy))]
+    private Task InsertPdf(PageThumbnailViewModel tile) => PromptAndAddAsync(insertIndex: Pages.IndexOf(tile));
 
-    [RelayCommand(CanExecute = nameof(CanAddPdf))]
-    private async Task AddPdfAsync()
+    /// <summary>
+    /// Prompts for PDF(s) and adds them — appended when <paramref name="insertIndex"/> is null, or
+    /// inserted at that page index otherwise. The first add of an empty editor establishes the
+    /// document (clean, no undo history); later adds are dirtying and undoable.
+    /// </summary>
+    private async Task PromptAndAddAsync(int? insertIndex)
     {
-        var path = await _services.FileDialogs.OpenPdfAsync("Add PDF to combine");
-        if (path is null || _model is null) return;
+        var paths = await _services.FileDialogs.OpenPdfsAsync(insertIndex is null ? "Add PDF" : "Insert PDF");
+        if (paths.Count == 0) return;
+
+        var firstLoad = _model is null;
+        _model ??= new PdfDocumentModel();
         var model = _model;
 
-        PushUndo(); // adding pages is undoable
-        await Do(() => { _services.Editor.AddPdf(model, path); return path; }, added =>
+        if (firstLoad) { _undo.Clear(); _redo.Clear(); }
+        else PushUndo();
+
+        await Do(() =>
         {
-            IsDirty = true;
+            var at = insertIndex ?? model.PageCount;
+            foreach (var path in paths)
+            {
+                var before = model.PageCount;
+                _services.Editor.AddPdfAt(model, path, at);
+                at += model.PageCount - before; // keep multiple files in the order chosen
+            }
+            return paths.Count;
+        }, count =>
+        {
+            DocumentName ??= model.Sources.Count > 0 ? model.Sources[0].DisplayName : null;
+            IsDirty = !firstLoad;
             RebuildPages();
-            Status = $"Added {System.IO.Path.GetFileName(added)}";
+            NotifyCommands();
+            Status = firstLoad
+                ? $"Opened {DocumentName}"
+                : count == 1 ? "Added 1 PDF" : $"Added {count} PDFs";
         }, "Couldn't add that PDF");
     }
-
-    private bool CanAddPdf => NotBusy && HasDocument;
 
     private bool CanSave => NotBusy && HasPages;
 
@@ -384,8 +393,8 @@ public partial class EditorViewModel : ViewModelBase
 
     private void NotifyCommands()
     {
-        OpenCommand.NotifyCanExecuteChanged();
         AddPdfCommand.NotifyCanExecuteChanged();
+        InsertPdfCommand.NotifyCanExecuteChanged();
         SaveAsCommand.NotifyCanExecuteChanged();
         SelectAllCommand.NotifyCanExecuteChanged();
         RemoveSelectedCommand.NotifyCanExecuteChanged();

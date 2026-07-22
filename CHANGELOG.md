@@ -10,15 +10,17 @@ what's new after an update.
 - Light-themed application shell.
 - Core PDF engine (`PdfDocumentModel` + `PdfEditor`): open, remove, reorder, rotate, combine, and
   save via PDFsharp, with a page model that spans multiple source files.
-- App shell wired to the engine: Open, Add PDF, Save, and Save As via native file pickers, with a
-  document summary, status bar, and busy/dirty tracking.
+- App shell wired to the engine: Add PDF and Save As via native file pickers, with a status bar and
+  busy/dirty tracking.
 - Page thumbnail grid: pages render to cached thumbnails (PDFtoImage/PDFium), one tile per page in
   document order, respecting per-page rotation.
 - Remove and reorder: multi-select (click / Ctrl+click / Shift+click), remove selected pages,
   drag-and-drop reordering with a live drop-position indicator, and multi-level undo/redo.
   Keyboard: Delete, Ctrl+A, Ctrl+Z, Ctrl+Y.
-- Combine PDFs: Add PDF appends another file's pages; when a document spans multiple files, each
-  page tile shows a colour-coded source chip so it's clear where every page came from.
+- Combine PDFs: a single Add PDF flow both opens the first file and combines more (no separate
+  Open); add one or several files at once. A central Add PDF button appears when nothing is open,
+  and a "+" between pages inserts PDF(s) at that exact spot. When a document spans multiple files,
+  each page tile shows a colour-coded source chip so it's clear where every page came from.
 - Rotate pages: rotate the selection clockwise/counter-clockwise (toolbar or Ctrl+R / Ctrl+Shift+R);
   thumbnails show rotated pages at the correct aspect ratio and the saved file reflects the rotation.
 - Safer saving: Save As always prompts for a destination, so opened source files are never modified

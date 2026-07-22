@@ -39,7 +39,7 @@ internal static class HeadlessRenderer
             var vm = new MainWindowViewModel(services);
             // Async work posts continuations to the (idle) UI thread; pump it rather than block-wait,
             // which would deadlock the dispatcher.
-            PumpUntilComplete(vm.Editor.OpenCommand.ExecuteAsync(null));
+            PumpUntilComplete(vm.Editor.AddPdfCommand.ExecuteAsync(null));
             PumpUntilComplete(vm.Editor.LoadThumbnailsAsync());
             Capture(vm, Path.Combine(outDir, "main_loaded.png"));
 
@@ -65,7 +65,7 @@ internal static class HeadlessRenderer
             CreateSamplePdf(sample2, 3);
             var combineServices = new AppServices(new QueueFileDialogs(sample, sample2));
             var combined = new MainWindowViewModel(combineServices);
-            PumpUntilComplete(combined.Editor.OpenCommand.ExecuteAsync(null));
+            PumpUntilComplete(combined.Editor.AddPdfCommand.ExecuteAsync(null));
             PumpUntilComplete(combined.Editor.AddPdfCommand.ExecuteAsync(null));
             PumpUntilComplete(combined.Editor.LoadThumbnailsAsync());
             Capture(combined, Path.Combine(outDir, "main_combined.png"));
@@ -120,7 +120,7 @@ internal static class HeadlessRenderer
     /// <summary>A file-dialog stub that returns one preset path from Open (for headless rendering).</summary>
     private sealed class SingleFileDialogs(string path) : IFileDialogService
     {
-        public Task<string?> OpenPdfAsync(string title) => Task.FromResult<string?>(path);
+        public Task<IReadOnlyList<string>> OpenPdfsAsync(string title) => Task.FromResult<IReadOnlyList<string>>([path]);
         public Task<string?> SavePdfAsync(string suggestedName) => Task.FromResult<string?>(null);
     }
 
@@ -128,8 +128,8 @@ internal static class HeadlessRenderer
     private sealed class QueueFileDialogs(params string[] paths) : IFileDialogService
     {
         private readonly Queue<string> _paths = new(paths);
-        public Task<string?> OpenPdfAsync(string title) =>
-            Task.FromResult<string?>(_paths.Count > 0 ? _paths.Dequeue() : null);
+        public Task<IReadOnlyList<string>> OpenPdfsAsync(string title) =>
+            Task.FromResult<IReadOnlyList<string>>(_paths.Count > 0 ? [_paths.Dequeue()] : []);
         public Task<string?> SavePdfAsync(string suggestedName) => Task.FromResult<string?>(null);
     }
 }

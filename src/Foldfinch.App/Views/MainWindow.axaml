@@ -48,7 +48,6 @@
                     <TextBlock Text="Foldfinch" FontSize="18" FontWeight="SemiBold"
                                Foreground="{StaticResource TitleBrush}" VerticalAlignment="Center"
                                Margin="0,0,10,0" />
-                    <Button Classes="tool" Content="Open" Command="{Binding Editor.OpenCommand}" />
                     <Button Classes="tool" Content="Add PDF" Command="{Binding Editor.AddPdfCommand}" />
                     <Border Width="1" Background="{StaticResource BorderBrush}" Margin="4,2" />
                     <Button Classes="tool" Content="Rotate ⟲" Command="{Binding Editor.RotateCounterClockwiseCommand}" />

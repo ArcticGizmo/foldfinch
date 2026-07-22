@@ -42,6 +42,13 @@ public sealed class PdfEditor
         model.AddSource(Load(path));
     }
 
+    /// <summary>Inserts another PDF's pages into the working document at <paramref name="atPageIndex"/>.</summary>
+    public void AddPdfAt(PdfDocumentModel model, string path, int atPageIndex)
+    {
+        ArgumentNullException.ThrowIfNull(model);
+        model.AddSourceAt(Load(path), atPageIndex);
+    }
+
     /// <summary>
     /// Writes the working document to <paramref name="outputPath"/>. To make overwriting a source
     /// file safe, the result is written to a temp file in the same directory and then atomically

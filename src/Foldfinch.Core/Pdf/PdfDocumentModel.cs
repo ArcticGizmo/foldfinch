@@ -29,13 +29,30 @@ public sealed class PdfDocumentModel
     public void AddSource(SourceDocument source, bool appendAllPages = true)
     {
         ArgumentNullException.ThrowIfNull(source);
-        if (_sources.Any(s => s.Id == source.Id))
-            throw new ArgumentException($"A source with id '{source.Id}' is already present.", nameof(source));
-
-        _sources.Add(source);
+        Register(source);
         if (appendAllPages)
             for (var i = 0; i < source.PageCount; i++)
                 _pages.Add(new PageRef(source.Id, i));
+    }
+
+    /// <summary>
+    /// Registers a source and inserts all of its pages starting at <paramref name="atPageIndex"/>
+    /// (clamped to the current range). This backs "insert a PDF at this spot".
+    /// </summary>
+    public void AddSourceAt(SourceDocument source, int atPageIndex)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        Register(source);
+        var at = Math.Clamp(atPageIndex, 0, _pages.Count);
+        var pages = Enumerable.Range(0, source.PageCount).Select(i => new PageRef(source.Id, i));
+        _pages.InsertRange(at, pages);
+    }
+
+    private void Register(SourceDocument source)
+    {
+        if (_sources.Any(s => s.Id == source.Id))
+            throw new ArgumentException($"A source with id '{source.Id}' is already present.", nameof(source));
+        _sources.Add(source);
     }
 
     /// <summary>Removes the pages at the given indices (order-independent; duplicates ignored).</summary>

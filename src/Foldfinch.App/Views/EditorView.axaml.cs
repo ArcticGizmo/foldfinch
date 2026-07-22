@@ -36,6 +36,9 @@ public partial class EditorView : UserControl
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+        // Clicks on the "+" insert affordance run their own command; don't select/drag the page.
+        if (IsInsertAffordance(e.Source)) { _pressTile = null; return; }
+
         _dragging = false;
         _pressTile = TileFrom(e.Source);
         _pressArgs = e;
@@ -155,6 +158,15 @@ public partial class EditorView : UserControl
     }
 
     private void HideDropLine() => DropLine.IsVisible = false;
+
+    /// <summary>True when <paramref name="source"/> is inside the "+" insert button.</summary>
+    private static bool IsInsertAffordance(object? source)
+    {
+        for (var v = source as Visual; v is not null; v = v.GetVisualParent())
+            if (v is Button b && b.Classes.Contains("insert"))
+                return true;
+        return false;
+    }
 
     /// <summary>The tile view-model whose visual subtree contains <paramref name="source"/> (or null).</summary>
     private static PageThumbnailViewModel? TileFrom(object? source) =>

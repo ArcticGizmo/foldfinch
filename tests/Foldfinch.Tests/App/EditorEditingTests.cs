@@ -12,7 +12,7 @@ public class EditorEditingTests
         var dialogs = new FakeFileDialogService();
         dialogs.OpenResults.Enqueue(path);
         var vm = new EditorViewModel(new AppServices(dialogs, new StubPdfRenderer()));
-        await vm.OpenCommand.ExecuteAsync(null);
+        await vm.AddPdfCommand.ExecuteAsync(null);
         return vm;
     }
 
@@ -136,7 +136,7 @@ public class EditorEditingTests
         dialogs.OpenResults.Enqueue(src);
         dialogs.SaveResult = outp;
         var vm = new EditorViewModel(new AppServices(dialogs, new StubPdfRenderer()));
-        await vm.OpenCommand.ExecuteAsync(null);
+        await vm.AddPdfCommand.ExecuteAsync(null);
 
         vm.SelectSingle(vm.Pages[0]);
         vm.RotateCounterClockwiseCommand.Execute(null); // 270
@@ -146,7 +146,7 @@ public class EditorEditingTests
     }
 
     [Fact]
-    public async Task Reopening_clears_undo_history()
+    public async Task First_add_is_a_clean_baseline_then_further_adds_are_dirty()
     {
         using var tmp = new TempDir();
         var a = tmp.File("a.pdf");
@@ -159,13 +159,13 @@ public class EditorEditingTests
         dialogs.OpenResults.Enqueue(b);
         var vm = new EditorViewModel(new AppServices(dialogs, new StubPdfRenderer()));
 
-        await vm.OpenCommand.ExecuteAsync(null);
-        vm.SelectSingle(vm.Pages[0]);
-        vm.RemoveSelectedCommand.Execute(null);
-        Assert.True(vm.UndoCommand.CanExecute(null));
+        await vm.AddPdfCommand.ExecuteAsync(null); // first add establishes the document
+        Assert.False(vm.IsDirty);
+        Assert.False(vm.UndoCommand.CanExecute(null)); // nothing to undo yet
 
-        await vm.OpenCommand.ExecuteAsync(null); // open b -> history must reset
-        Assert.False(vm.UndoCommand.CanExecute(null));
-        Assert.Equal(3, vm.PageCount);
+        await vm.AddPdfCommand.ExecuteAsync(null); // combining more is a dirtying, undoable change
+        Assert.True(vm.IsDirty);
+        Assert.True(vm.UndoCommand.CanExecute(null));
+        Assert.Equal(5, vm.PageCount);
     }
 }

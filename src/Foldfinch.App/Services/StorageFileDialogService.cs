@@ -12,19 +12,19 @@ public sealed class StorageFileDialogService : IFileDialogService
 {
     private static readonly FilePickerFileType PdfType = new("PDF document") { Patterns = ["*.pdf"] };
 
-    public async Task<string?> OpenPdfAsync(string title)
+    public async Task<IReadOnlyList<string>> OpenPdfsAsync(string title)
     {
         var provider = StorageProvider;
-        if (provider is null) return null;
+        if (provider is null) return [];
 
         var files = await provider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = title,
-            AllowMultiple = false,
+            AllowMultiple = true,
             FileTypeFilter = [PdfType],
         });
 
-        return files.Count > 0 ? files[0].TryGetLocalPath() : null;
+        return [.. files.Select(f => f.TryGetLocalPath()).Where(p => p is not null).Cast<string>()];
     }
 
     public async Task<string?> SavePdfAsync(string suggestedName)
