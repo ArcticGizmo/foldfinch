@@ -90,6 +90,28 @@ public sealed class PdfDocumentModel
         _pages[index] = _pages[index].Rotated(deltaDegrees);
     }
 
+    /// <summary>Captures the current page list (for undo/redo). Cheap — <see cref="PageRef"/> is immutable.</summary>
+    public IReadOnlyList<PageRef> Snapshot() => [.. _pages];
+
+    /// <summary>
+    /// Replaces the whole page list with <paramref name="pages"/>. Every entry must reference a known
+    /// source and a valid page index within it. Used to apply an undo/redo snapshot.
+    /// </summary>
+    public void Restore(IReadOnlyList<PageRef> pages)
+    {
+        ArgumentNullException.ThrowIfNull(pages);
+        foreach (var p in pages)
+        {
+            var source = FindSource(p.SourceId)
+                ?? throw new ArgumentException($"Snapshot references unknown source '{p.SourceId}'.", nameof(pages));
+            if (p.SourcePageIndex < 0 || p.SourcePageIndex >= source.PageCount)
+                throw new ArgumentException($"Snapshot page index {p.SourcePageIndex} is out of range for '{source.DisplayName}'.", nameof(pages));
+        }
+
+        _pages.Clear();
+        _pages.AddRange(pages);
+    }
+
     private void ValidateIndex(int index)
     {
         if (index < 0 || index >= _pages.Count)

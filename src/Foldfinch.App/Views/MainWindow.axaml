@@ -8,6 +8,15 @@
         Background="{StaticResource FormBgBrush}"
         Title="Foldfinch">
 
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Delete" Command="{Binding Editor.RemoveSelectedCommand}" />
+        <KeyBinding Gesture="Back" Command="{Binding Editor.RemoveSelectedCommand}" />
+        <KeyBinding Gesture="Ctrl+A" Command="{Binding Editor.SelectAllCommand}" />
+        <KeyBinding Gesture="Ctrl+Z" Command="{Binding Editor.UndoCommand}" />
+        <KeyBinding Gesture="Ctrl+Y" Command="{Binding Editor.RedoCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+Z" Command="{Binding Editor.RedoCommand}" />
+    </Window.KeyBindings>
+
     <Window.Styles>
         <!-- Toolbar buttons -->
         <Style Selector="Button.tool">
@@ -38,6 +47,10 @@
                                Margin="0,0,10,0" />
                     <Button Classes="tool" Content="Open" Command="{Binding Editor.OpenCommand}" />
                     <Button Classes="tool" Content="Add PDF" Command="{Binding Editor.AddPdfCommand}" />
+                    <Border Width="1" Background="{StaticResource BorderBrush}" Margin="4,2" />
+                    <Button Classes="tool" Content="Remove" Command="{Binding Editor.RemoveSelectedCommand}" />
+                    <Button Classes="tool" Content="Undo" Command="{Binding Editor.UndoCommand}" />
+                    <Button Classes="tool" Content="Redo" Command="{Binding Editor.RedoCommand}" />
                 </StackPanel>
 
                 <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center"
@@ -53,10 +66,14 @@
         <!-- Status bar -->
         <Border DockPanel.Dock="Bottom" Background="{StaticResource PanelBgBrush}"
                 BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="14,6">
-            <Grid ColumnDefinitions="*,Auto">
+            <Grid ColumnDefinitions="*,Auto,Auto">
                 <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="12"
                            Foreground="{StaticResource MutedBrush}" Text="{Binding Editor.Status}" />
-                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="12"
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="12" Margin="0,0,12,0"
+                           Foreground="{StaticResource AccentBrush}"
+                           Text="{Binding Editor.SelectionCount, StringFormat='{}{0} selected'}"
+                           IsVisible="{Binding Editor.HasSelection}" />
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="12"
                            Foreground="{StaticResource MutedBrush}"
                            Text="{Binding Editor.PageCount, StringFormat='{}{0} pages'}"
                            IsVisible="{Binding !Editor.IsEmpty}" />

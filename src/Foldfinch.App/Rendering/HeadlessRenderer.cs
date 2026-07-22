@@ -43,6 +43,14 @@ internal static class HeadlessRenderer
             PumpUntilComplete(vm.Editor.LoadThumbnailsAsync());
             Capture(vm, Path.Combine(outDir, "main_loaded.png"));
 
+            // Selection state: highlight a couple of pages so the selection styling shows.
+            if (vm.Editor.Pages.Count >= 4)
+            {
+                vm.Editor.SelectSingle(vm.Editor.Pages[1]);
+                vm.Editor.ToggleSelect(vm.Editor.Pages[3]);
+                Capture(vm, Path.Combine(outDir, "main_selection.png"));
+            }
+
             Console.WriteLine($"rendered to {Path.GetFullPath(outDir)}");
             return 0;
         }

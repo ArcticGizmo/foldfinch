@@ -26,6 +26,9 @@ public partial class PageThumbnailViewModel : ViewModelBase
     /// <summary>True while the thumbnail is being rendered.</summary>
     [ObservableProperty] private bool _isLoading = true;
 
+    /// <summary>True when this tile is part of the current selection (drives the highlight).</summary>
+    [ObservableProperty] private bool _isSelected;
+
     public PageThumbnailViewModel(PageRef page, string sourcePath, int pageNumber)
     {
         Page = page;

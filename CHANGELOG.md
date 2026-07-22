@@ -14,3 +14,5 @@ what's new after an update.
   document summary, status bar, and busy/dirty tracking.
 - Page thumbnail grid: pages render to cached thumbnails (PDFtoImage/PDFium), one tile per page in
   document order, respecting per-page rotation.
+- Remove and reorder: multi-select (click / Ctrl+click / Shift+click), remove selected pages,
+  drag-and-drop reordering, and multi-level undo/redo. Keyboard: Delete, Ctrl+A, Ctrl+Z, Ctrl+Y.
