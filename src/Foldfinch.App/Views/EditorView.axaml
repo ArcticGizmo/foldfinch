@@ -14,6 +14,22 @@
                        TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource MutedBrush}" />
         </StackPanel>
 
-        <!-- Page grid goes here from M3 onward. -->
+        <!-- Document summary (M2). The visual page grid replaces this in M3. -->
+        <StackPanel IsVisible="{Binding !IsEmpty}" Margin="28" Spacing="14">
+            <TextBlock Text="{Binding DocumentName}" FontSize="18" FontWeight="SemiBold"
+                       Foreground="{StaticResource TitleBrush}" />
+            <TextBlock Text="Page thumbnails arrive next. Sources in this document:"
+                       Foreground="{StaticResource MutedBrush}" />
+            <ItemsControl ItemsSource="{Binding SourceSummaries}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{StaticResource PanelBgBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,8">
+                            <TextBlock Text="{Binding}" Foreground="{StaticResource FgBrush}" />
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
     </Panel>
 </UserControl>

@@ -1,3 +1,6 @@
+using Foldfinch.App.Services;
+using Foldfinch.Core.Pdf;
+
 namespace Foldfinch.App;
 
 /// <summary>
@@ -6,7 +9,17 @@ namespace Foldfinch.App;
 /// </summary>
 public sealed class AppServices
 {
-    // Core services (renderer, editor) are wired in from M1/M3 onward.
+    /// <summary>PDF load/save engine (PDFsharp-backed).</summary>
+    public PdfEditor Editor { get; }
+
+    /// <summary>Open/save file pickers.</summary>
+    public IFileDialogService FileDialogs { get; }
+
+    public AppServices(IFileDialogService? fileDialogs = null)
+    {
+        Editor = new PdfEditor();
+        FileDialogs = fileDialogs ?? new StorageFileDialogService();
+    }
 
     /// <summary>Run a blocking Core call on a background thread (keeps the UI responsive).</summary>
     public static Task<T> RunAsync<T>(Func<T> work) => Task.Run(work);

@@ -25,8 +25,20 @@ internal static class HeadlessRenderer
                 .SetupWithoutStarting();
 
             var services = new AppServices();
-            var vm = new MainWindowViewModel(services);
-            Capture(vm, Path.Combine(outDir, "main.png"));
+
+            // Empty state.
+            Capture(new MainWindowViewModel(services), Path.Combine(outDir, "main_empty.png"));
+
+            // Loaded state: the live store can't be populated headlessly (no file picker), so the
+            // editor's display state is set directly for the snapshot.
+            var loaded = new MainWindowViewModel(services);
+            loaded.Editor.DocumentName = "report.pdf";
+            loaded.Editor.SourceSummaries.Add("report.pdf — 12 pages");
+            loaded.Editor.SourceSummaries.Add("appendix.pdf — 3 pages");
+            loaded.Editor.PageCount = 15;
+            loaded.Editor.IsEmpty = false;
+            loaded.Editor.Status = "Added appendix.pdf";
+            Capture(loaded, Path.Combine(outDir, "main_loaded.png"));
 
             Console.WriteLine($"rendered to {Path.GetFullPath(outDir)}");
             return 0;
