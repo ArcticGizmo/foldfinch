@@ -1,8 +1,11 @@
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Threading;
+using Foldfinch.App.Services;
 using Foldfinch.App.ViewModels;
 using Foldfinch.App.Views;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 
 namespace Foldfinch.App.Rendering;
 
@@ -24,21 +27,21 @@ internal static class HeadlessRenderer
                 .WithInterFont()
                 .SetupWithoutStarting();
 
-            var services = new AppServices();
-
             // Empty state.
-            Capture(new MainWindowViewModel(services), Path.Combine(outDir, "main_empty.png"));
+            Capture(new MainWindowViewModel(new AppServices()), Path.Combine(outDir, "main_empty.png"));
 
-            // Loaded state: the live store can't be populated headlessly (no file picker), so the
-            // editor's display state is set directly for the snapshot.
-            var loaded = new MainWindowViewModel(services);
-            loaded.Editor.DocumentName = "report.pdf";
-            loaded.Editor.SourceSummaries.Add("report.pdf — 12 pages");
-            loaded.Editor.SourceSummaries.Add("appendix.pdf — 3 pages");
-            loaded.Editor.PageCount = 15;
-            loaded.Editor.IsEmpty = false;
-            loaded.Editor.Status = "Added appendix.pdf";
-            Capture(loaded, Path.Combine(outDir, "main_loaded.png"));
+            // Loaded state: author a real sample PDF and open it so the grid shows true thumbnails.
+            var sample = Path.Combine(Path.GetTempPath(), "foldfinch-render", "sample.pdf");
+            Directory.CreateDirectory(Path.GetDirectoryName(sample)!);
+            CreateSamplePdf(sample, 6);
+
+            var services = new AppServices(new SingleFileDialogs(sample));
+            var vm = new MainWindowViewModel(services);
+            // Async work posts continuations to the (idle) UI thread; pump it rather than block-wait,
+            // which would deadlock the dispatcher.
+            PumpUntilComplete(vm.Editor.OpenCommand.ExecuteAsync(null));
+            PumpUntilComplete(vm.Editor.LoadThumbnailsAsync());
+            Capture(vm, Path.Combine(outDir, "main_loaded.png"));
 
             Console.WriteLine($"rendered to {Path.GetFullPath(outDir)}");
             return 0;
@@ -50,6 +53,14 @@ internal static class HeadlessRenderer
         }
     }
 
+    /// <summary>Runs the dispatcher's queued jobs until <paramref name="task"/> finishes (headless helper).</summary>
+    static void PumpUntilComplete(Task task)
+    {
+        while (!task.IsCompleted)
+            Dispatcher.UIThread.RunJobs();
+        task.GetAwaiter().GetResult(); // observe any exception
+    }
+
     static void Capture(MainWindowViewModel vm, string path)
     {
         var window = new MainWindow { DataContext = vm };
@@ -58,5 +69,31 @@ internal static class HeadlessRenderer
         var frame = window.CaptureRenderedFrame();
         frame?.Save(path);
         window.Close();
+    }
+
+    /// <summary>Authors a simple multi-page PDF (vector shapes only, no fonts) for the render snapshot.</summary>
+    static void CreateSamplePdf(string path, int pages)
+    {
+        XColor[] bars = [XColors.SteelBlue, XColors.SeaGreen, XColors.IndianRed, XColors.Goldenrod, XColors.MediumPurple, XColors.Teal];
+        using var doc = new PdfDocument();
+        for (var i = 0; i < pages; i++)
+        {
+            var page = doc.AddPage();
+            page.Width = XUnit.FromPoint(420);
+            page.Height = XUnit.FromPoint(560);
+            using var gfx = XGraphics.FromPdfPage(page);
+            gfx.DrawRectangle(XBrushes.White, 0, 0, 420, 560);
+            gfx.DrawRectangle(new XSolidBrush(bars[i % bars.Length]), 40, 40, 340, 90);
+            for (var line = 0; line < 8; line++)
+                gfx.DrawRectangle(XBrushes.Gainsboro, 40, 170 + line * 34, 340 - (line % 3) * 40, 14);
+        }
+        doc.Save(path);
+    }
+
+    /// <summary>A file-dialog stub that returns one preset path from Open (for headless rendering).</summary>
+    private sealed class SingleFileDialogs(string path) : IFileDialogService
+    {
+        public Task<string?> OpenPdfAsync(string title) => Task.FromResult<string?>(path);
+        public Task<string?> SavePdfAsync(string suggestedName) => Task.FromResult<string?>(null);
     }
 }

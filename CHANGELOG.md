@@ -12,3 +12,5 @@ what's new after an update.
   save via PDFsharp, with a page model that spans multiple source files.
 - App shell wired to the engine: Open, Add PDF, Save, and Save As via native file pickers, with a
   document summary, status bar, and busy/dirty tracking.
+- Page thumbnail grid: pages render to cached thumbnails (PDFtoImage/PDFium), one tile per page in
+  document order, respecting per-page rotation.

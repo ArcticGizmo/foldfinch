@@ -17,7 +17,7 @@ public class EditorViewModelTests
         var dialogs = new FakeFileDialogService();
         dialogs.OpenResults.Enqueue(src);
         dialogs.SaveResult = outp;
-        var vm = new EditorViewModel(new AppServices(dialogs));
+        var vm = new EditorViewModel(new AppServices(dialogs, new StubPdfRenderer()));
 
         await vm.OpenCommand.ExecuteAsync(null);
         Assert.False(vm.IsEmpty);
@@ -44,14 +44,15 @@ public class EditorViewModelTests
         dialogs.OpenResults.Enqueue(a);
         dialogs.OpenResults.Enqueue(b);
         dialogs.SaveResult = outp;
-        var vm = new EditorViewModel(new AppServices(dialogs));
+        var vm = new EditorViewModel(new AppServices(dialogs, new StubPdfRenderer()));
 
         await vm.OpenCommand.ExecuteAsync(null);
         await vm.AddPdfCommand.ExecuteAsync(null);
 
         Assert.Equal(3, vm.PageCount);
         Assert.True(vm.IsDirty);
-        Assert.Equal(2, vm.SourceSummaries.Count);
+        Assert.Equal(3, vm.Pages.Count);
+        Assert.Equal(2, vm.Pages.Select(p => p.SourcePath).Distinct().Count());
 
         await vm.SaveAsCommand.ExecuteAsync(null);
         Assert.Equal([101, 102, 201], PdfFixtures.ReadPageWidths(outp));
@@ -61,7 +62,7 @@ public class EditorViewModelTests
     public async Task Cancelling_open_leaves_editor_empty()
     {
         var dialogs = new FakeFileDialogService(); // no queued path -> returns null (cancelled)
-        var vm = new EditorViewModel(new AppServices(dialogs));
+        var vm = new EditorViewModel(new AppServices(dialogs, new StubPdfRenderer()));
 
         await vm.OpenCommand.ExecuteAsync(null);
 
@@ -72,7 +73,7 @@ public class EditorViewModelTests
     [Fact]
     public void Save_disabled_when_no_pages()
     {
-        var vm = new EditorViewModel(new AppServices(new FakeFileDialogService()));
+        var vm = new EditorViewModel(new AppServices(new FakeFileDialogService(), new StubPdfRenderer()));
         Assert.False(vm.SaveCommand.CanExecute(null));
         Assert.False(vm.AddPdfCommand.CanExecute(null));
         Assert.True(vm.OpenCommand.CanExecute(null));

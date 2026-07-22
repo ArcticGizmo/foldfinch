@@ -14,22 +14,35 @@
                        TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource MutedBrush}" />
         </StackPanel>
 
-        <!-- Document summary (M2). The visual page grid replaces this in M3. -->
-        <StackPanel IsVisible="{Binding !IsEmpty}" Margin="28" Spacing="14">
-            <TextBlock Text="{Binding DocumentName}" FontSize="18" FontWeight="SemiBold"
-                       Foreground="{StaticResource TitleBrush}" />
-            <TextBlock Text="Page thumbnails arrive next. Sources in this document:"
-                       Foreground="{StaticResource MutedBrush}" />
-            <ItemsControl ItemsSource="{Binding SourceSummaries}">
+        <!-- Page grid. -->
+        <ScrollViewer IsVisible="{Binding !IsEmpty}" Padding="20" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Pages}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="{StaticResource PanelBgBrush}" BorderBrush="{StaticResource BorderBrush}"
-                                BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,8">
-                            <TextBlock Text="{Binding}" Foreground="{StaticResource FgBrush}" />
-                        </Border>
+                    <DataTemplate DataType="vm:PageThumbnailViewModel">
+                        <StackPanel Width="216" Margin="8" Spacing="6">
+                            <!-- The page. Fixed height keeps the grid tidy regardless of page aspect. -->
+                            <Border Background="#FFFFFF" BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1" CornerRadius="3" Height="272"
+                                    HorizontalAlignment="Center" Padding="0" ClipToBounds="True"
+                                    BoxShadow="0 1 4 0 #22000000">
+                                <Panel>
+                                    <TextBlock Text="…" IsVisible="{Binding IsLoading}" FontSize="20"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Foreground="{StaticResource MutedBrush}" />
+                                    <Image Source="{Binding Image}" Stretch="Uniform" Margin="6" />
+                                </Panel>
+                            </Border>
+                            <TextBlock Text="{Binding PageNumber}" FontSize="12" HorizontalAlignment="Center"
+                                       Foreground="{StaticResource MutedBrush}" />
+                        </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </StackPanel>
+        </ScrollViewer>
     </Panel>
 </UserControl>

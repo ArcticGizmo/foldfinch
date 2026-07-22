@@ -6,17 +6,16 @@ using Foldfinch.Core.Pdf;
 namespace Foldfinch.App.ViewModels;
 
 /// <summary>
-/// The main editing surface: an ordered set of pages drawn from one or more source PDFs.
-/// M2 wires the document lifecycle (open / add / save); the visual page grid and per-page
-/// actions arrive in M3/M4.
+/// The main editing surface: an ordered set of pages drawn from one or more source PDFs, shown as a
+/// grid of thumbnails. M3 renders the grid; per-page remove/reorder/rotate arrive in M4/M6.
 /// </summary>
 public partial class EditorViewModel : ViewModelBase
 {
     private readonly AppServices _services;
     private PdfDocumentModel? _model;
 
-    /// <summary>One row per source file currently contributing pages (for the M2 summary panel).</summary>
-    public ObservableCollection<string> SourceSummaries { get; } = [];
+    /// <summary>The page tiles shown in the grid, in document order.</summary>
+    public ObservableCollection<PageThumbnailViewModel> Pages { get; } = [];
 
     /// <summary>True until a document with pages is open — drives the empty-state prompt.</summary>
     [ObservableProperty] private bool _isEmpty = true;
@@ -54,14 +53,13 @@ public partial class EditorViewModel : ViewModelBase
         var path = await _services.FileDialogs.OpenPdfAsync("Open PDF");
         if (path is null) return;
 
-        await RunPdfWork(() =>
+        await Do(() => _services.Editor.Open(path), model =>
         {
-            var model = _services.Editor.Open(path);
             _model = model;
             DocumentName = model.Sources[0].DisplayName;
             SavePath = null;                 // require a Save As target the first time (see M6 for overwrite)
             IsDirty = false;
-            Sync();
+            RebuildPages();
             Status = $"Opened {DocumentName}";
         }, "Couldn't open that PDF");
     }
@@ -71,13 +69,13 @@ public partial class EditorViewModel : ViewModelBase
     {
         var path = await _services.FileDialogs.OpenPdfAsync("Add PDF to combine");
         if (path is null || _model is null) return;
+        var model = _model;
 
-        await RunPdfWork(() =>
+        await Do(() => { _services.Editor.AddPdf(model, path); return path; }, added =>
         {
-            _services.Editor.AddPdf(_model, path);
             IsDirty = true;
-            Sync();
-            Status = $"Added {System.IO.Path.GetFileName(path)}";
+            RebuildPages();
+            Status = $"Added {System.IO.Path.GetFileName(added)}";
         }, "Couldn't add that PDF");
     }
 
@@ -105,22 +103,25 @@ public partial class EditorViewModel : ViewModelBase
     {
         if (_model is null) return;
         var model = _model;
-        await RunPdfWork(() =>
+        await Do(() => { _services.Editor.Save(model, path); return path; }, saved =>
         {
-            _services.Editor.Save(model, path);
-            SavePath = path;
+            SavePath = saved;
             IsDirty = false;
-            Status = $"Saved to {System.IO.Path.GetFileName(path)}";
+            Status = $"Saved to {System.IO.Path.GetFileName(saved)}";
         }, "Couldn't save the PDF");
     }
 
-    /// <summary>Runs a blocking PDF call off the UI thread, guarding busy state and surfacing errors.</summary>
-    private async Task RunPdfWork(Action work, string errorPrefix)
+    /// <summary>
+    /// Runs a blocking PDF call off the UI thread, then applies <paramref name="after"/> back on the
+    /// UI thread (so observable collections are only mutated there). Errors surface in the status line.
+    /// </summary>
+    private async Task Do<T>(Func<T> work, Action<T> after, string errorPrefix)
     {
         IsBusy = true;
         try
         {
-            await AppServices.RunAsync(work);
+            var result = await AppServices.RunAsync(work);
+            after(result);
         }
         catch (Exception ex)
         {
@@ -132,16 +133,30 @@ public partial class EditorViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Refreshes derived state from the model after any mutation.</summary>
-    private void Sync()
+    /// <summary>Rebuilds the page tiles from the model and kicks off thumbnail rendering.</summary>
+    private void RebuildPages()
     {
+        Pages.Clear();
+        if (_model is not null)
+        {
+            var number = 1;
+            foreach (var pageRef in _model.Pages)
+            {
+                var source = _model.FindSource(pageRef.SourceId)!;
+                Pages.Add(new PageThumbnailViewModel(pageRef, source.Path, number++));
+            }
+        }
+
         PageCount = _model?.PageCount ?? 0;
         IsEmpty = PageCount == 0;
+        _ = LoadThumbnailsAsync();
+    }
 
-        SourceSummaries.Clear();
-        if (_model is not null)
-            foreach (var s in _model.Sources)
-                SourceSummaries.Add($"{s.DisplayName} — {s.PageCount} page{(s.PageCount == 1 ? "" : "s")}");
+    /// <summary>Renders thumbnails one at a time (PDFium is single-threaded) for the current tiles.</summary>
+    public async Task LoadThumbnailsAsync()
+    {
+        foreach (var tile in Pages.ToArray())
+            await tile.LoadAsync(_services.Thumbnails);
     }
 
     partial void OnIsBusyChanged(bool value) => NotifyCommands();
