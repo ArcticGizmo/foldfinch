@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Foldfinch.App.ViewModels;
 
 namespace Foldfinch.App.Views;
@@ -32,4 +33,6 @@ public partial class MainWindow : Window
         _forceClose = true;
         Close();
     }
+
+    private void OnAboutClick(object? sender, RoutedEventArgs e) => new AboutWindow().ShowDialog(this);
 }

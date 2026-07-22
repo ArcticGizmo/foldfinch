@@ -3,7 +3,7 @@
 All notable changes to Foldfinch are documented here. The app embeds this file and shows
 what's new after an update.
 
-## [Unreleased]
+## [v0.1.0] - 2026-07-22
 
 ### Added
 - Project scaffold: `Foldfinch.Core`, `Foldfinch.App`, and `Foldfinch.Tests` on .NET 10 + Avalonia 12.
@@ -23,3 +23,6 @@ what's new after an update.
 - Safer saving: Save overwrites the opened file in place (written to a temp file and swapped in), or
   Save As to a new location. Closing with unsaved changes prompts to save, discard, or cancel.
 - Friendlier errors: password-protected and damaged PDFs report a clear message instead of failing.
+- Packaging: Velopack-based installers for Windows and macOS via a tagged GitHub release, an
+  update-available notice on launch, an About dialog with a manual update check, and a "what's new"
+  window after updating. App icon added.
