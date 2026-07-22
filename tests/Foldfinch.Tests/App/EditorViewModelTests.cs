@@ -24,7 +24,7 @@ public class EditorViewModelTests
         Assert.Equal(2, vm.PageCount);
         Assert.Equal("a.pdf", vm.DocumentName);
 
-        await vm.SaveCommand.ExecuteAsync(null); // no SavePath yet -> routes through Save As
+        await vm.SaveAsCommand.ExecuteAsync(null); // explicit Save As to the chosen path
         Assert.True(File.Exists(outp));
         Assert.Equal([101, 102], PdfFixtures.ReadPageWidths(outp));
         Assert.False(vm.IsDirty);
@@ -56,6 +56,26 @@ public class EditorViewModelTests
 
         await vm.SaveAsCommand.ExecuteAsync(null);
         Assert.Equal([101, 102, 201], PdfFixtures.ReadPageWidths(outp));
+    }
+
+    [Fact]
+    public async Task Save_overwrites_the_opened_file_in_place()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.File("a.pdf");
+        PdfFixtures.Create(src, 101, 102, 103);
+
+        var dialogs = new FakeFileDialogService();
+        dialogs.OpenResults.Enqueue(src);
+        var vm = new EditorViewModel(new AppServices(dialogs, new StubPdfRenderer()));
+        await vm.OpenCommand.ExecuteAsync(null);
+
+        vm.SelectSingle(vm.Pages[0]);
+        vm.RemoveSelectedCommand.Execute(null);
+        await vm.SaveCommand.ExecuteAsync(null); // SavePath == source -> overwrite
+
+        Assert.Equal([102, 103], PdfFixtures.ReadPageWidths(src));
+        Assert.False(vm.IsDirty);
     }
 
     [Fact]

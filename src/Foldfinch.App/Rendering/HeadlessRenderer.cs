@@ -51,6 +51,15 @@ internal static class HeadlessRenderer
                 Capture(vm, Path.Combine(outDir, "main_selection.png"));
             }
 
+            // Rotated state: rotate one page so the thumbnail (and toolbar) reflect it.
+            if (vm.Editor.Pages.Count >= 3)
+            {
+                vm.Editor.SelectSingle(vm.Editor.Pages[2]);
+                vm.Editor.RotateClockwiseCommand.Execute(null);
+                PumpUntilComplete(vm.Editor.LoadThumbnailsAsync());
+                Capture(vm, Path.Combine(outDir, "main_rotated.png"));
+            }
+
             // Combined state: open one PDF, add a second, so per-source chips appear.
             var sample2 = Path.Combine(Path.GetTempPath(), "foldfinch-render", "appendix.pdf");
             CreateSamplePdf(sample2, 3);

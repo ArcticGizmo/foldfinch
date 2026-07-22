@@ -18,3 +18,8 @@ what's new after an update.
   drag-and-drop reordering, and multi-level undo/redo. Keyboard: Delete, Ctrl+A, Ctrl+Z, Ctrl+Y.
 - Combine PDFs: Add PDF appends another file's pages; when a document spans multiple files, each
   page tile shows a colour-coded source chip so it's clear where every page came from.
+- Rotate pages: rotate the selection clockwise/counter-clockwise (toolbar or Ctrl+R / Ctrl+Shift+R);
+  thumbnails and the saved file reflect the rotation.
+- Safer saving: Save overwrites the opened file in place (written to a temp file and swapped in), or
+  Save As to a new location. Closing with unsaved changes prompts to save, discard, or cancel.
+- Friendlier errors: password-protected and damaged PDFs report a clear message instead of failing.

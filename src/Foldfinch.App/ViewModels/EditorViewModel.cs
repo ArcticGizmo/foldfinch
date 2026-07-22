@@ -81,7 +81,7 @@ public partial class EditorViewModel : ViewModelBase
         {
             _model = model;
             DocumentName = model.Sources[0].DisplayName;
-            SavePath = null;                 // require a Save As target the first time (see M6 for overwrite)
+            SavePath = model.Sources[0].Path; // Save overwrites the opened file (written safely via a temp)
             IsDirty = false;
             _undo.Clear();
             _redo.Clear();
@@ -190,6 +190,8 @@ public partial class EditorViewModel : ViewModelBase
     {
         SelectionCount = Pages.Count(p => p.IsSelected);
         RemoveSelectedCommand.NotifyCanExecuteChanged();
+        RotateClockwiseCommand.NotifyCanExecuteChanged();
+        RotateCounterClockwiseCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>True when at least one page is selected (drives Remove/rotate + the status hint).</summary>
@@ -237,6 +239,12 @@ public partial class EditorViewModel : ViewModelBase
         Status = moving.Count == 1 ? "Moved 1 page" : $"Moved {moving.Count} pages";
     }
 
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void RotateClockwise() => RotateSelected(90);
+
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void RotateCounterClockwise() => RotateSelected(-90);
+
     /// <summary>Rotates every selected page clockwise (used by M6 rotate; harmless if nothing selected).</summary>
     public void RotateSelected(int deltaDegrees)
     {
@@ -256,6 +264,7 @@ public partial class EditorViewModel : ViewModelBase
         foreach (var tile in Pages)
             tile.IsSelected = keys.Contains((tile.Page.SourceId, tile.Page.SourcePageIndex));
         UpdateSelectionCount();
+        Status = indices.Count == 1 ? "Rotated 1 page" : $"Rotated {indices.Count} pages";
     }
 
     /// <summary>Snapshot → run the model mutation → rebuild tiles (preserving selection where asked).</summary>
@@ -393,6 +402,8 @@ public partial class EditorViewModel : ViewModelBase
         SaveAsCommand.NotifyCanExecuteChanged();
         SelectAllCommand.NotifyCanExecuteChanged();
         RemoveSelectedCommand.NotifyCanExecuteChanged();
+        RotateClockwiseCommand.NotifyCanExecuteChanged();
+        RotateCounterClockwiseCommand.NotifyCanExecuteChanged();
         UndoCommand.NotifyCanExecuteChanged();
         RedoCommand.NotifyCanExecuteChanged();
     }

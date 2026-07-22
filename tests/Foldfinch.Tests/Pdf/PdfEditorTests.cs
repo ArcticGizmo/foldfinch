@@ -112,13 +112,38 @@ public class PdfEditorTests
         var model = _editor.Open(src);
         model.RemoveAt([0]);
 
-        Assert.Throws<InvalidOperationException>(() => _editor.Save(model, tmp.File("out.pdf")));
+        Assert.Throws<PdfOperationException>(() => _editor.Save(model, tmp.File("out.pdf")));
     }
 
     [Fact]
     public void Load_missing_file_throws()
     {
         using var tmp = new TempDir();
-        Assert.Throws<FileNotFoundException>(() => _editor.Open(tmp.File("nope.pdf")));
+        Assert.Throws<PdfOperationException>(() => _editor.Open(tmp.File("nope.pdf")));
+    }
+
+    [Fact]
+    public void Corrupt_file_reports_a_friendly_error()
+    {
+        using var tmp = new TempDir();
+        var bogus = tmp.File("bogus.pdf");
+        File.WriteAllText(bogus, "this is not a pdf");
+
+        var ex = Assert.Throws<PdfOperationException>(() => _editor.Open(bogus));
+        Assert.Contains("valid PDF", ex.Message);
+    }
+
+    [Fact]
+    public void Can_overwrite_the_source_file_in_place()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.File("a.pdf");
+        PdfFixtures.Create(src, 101, 102, 103);
+
+        var model = _editor.Open(src);
+        model.RemoveAt([1]); // drop page 102
+        _editor.Save(model, src); // overwrite the file we opened
+
+        Assert.Equal([101, 103], PdfFixtures.ReadPageWidths(src));
     }
 }

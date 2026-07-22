@@ -105,6 +105,47 @@ public class EditorEditingTests
     }
 
     [Fact]
+    public async Task Rotate_selected_is_applied_and_undoable()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.File("a.pdf");
+        PdfFixtures.Create(src, 100, 100, 100);
+        var vm = await OpenAsync(src);
+
+        vm.SelectSingle(vm.Pages[1]);
+        vm.RotateClockwiseCommand.Execute(null);
+        Assert.Equal(90, vm.Pages[1].Page.Rotation);
+        Assert.True(vm.Pages[1].IsSelected); // selection survives rotation
+
+        vm.RotateClockwiseCommand.Execute(null);
+        Assert.Equal(180, vm.Pages[1].Page.Rotation);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(90, vm.Pages[1].Page.Rotation);
+    }
+
+    [Fact]
+    public async Task Save_persists_rotation()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.File("a.pdf");
+        var outp = tmp.File("out.pdf");
+        PdfFixtures.Create(src, 100, 100);
+
+        var dialogs = new FakeFileDialogService();
+        dialogs.OpenResults.Enqueue(src);
+        dialogs.SaveResult = outp;
+        var vm = new EditorViewModel(new AppServices(dialogs, new StubPdfRenderer()));
+        await vm.OpenCommand.ExecuteAsync(null);
+
+        vm.SelectSingle(vm.Pages[0]);
+        vm.RotateCounterClockwiseCommand.Execute(null); // 270
+        await vm.SaveAsCommand.ExecuteAsync(null);
+
+        Assert.Equal([270, 0], PdfFixtures.ReadPageRotations(outp));
+    }
+
+    [Fact]
     public async Task Reopening_clears_undo_history()
     {
         using var tmp = new TempDir();
