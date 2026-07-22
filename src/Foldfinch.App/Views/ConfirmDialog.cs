@@ -35,7 +35,7 @@ public sealed class ConfirmDialog : Window
             Margin = new(0, 8, 0, 0),
         };
 
-        var save = Button("Save", CloseChoice.Save, primary: true);
+        var save = Button("Save As…", CloseChoice.Save, primary: true);
         var discard = Button("Discard", CloseChoice.Discard, primary: false);
         var cancel = Button("Cancel", CloseChoice.Cancel, primary: false);
 

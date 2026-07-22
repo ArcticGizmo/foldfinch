@@ -26,8 +26,8 @@ public partial class MainWindow : Window
         if (choice == CloseChoice.Cancel) return;
         if (choice == CloseChoice.Save)
         {
-            await vm.Editor.SaveCommand.ExecuteAsync(null);
-            if (vm.Editor.IsDirty) return; // save failed or was cancelled -> stay open
+            await vm.Editor.SaveAsCommand.ExecuteAsync(null);
+            if (vm.Editor.IsDirty) return; // save cancelled or failed -> stay open
         }
 
         _forceClose = true;

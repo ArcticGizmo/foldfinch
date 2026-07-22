@@ -59,22 +59,25 @@ public class EditorViewModelTests
     }
 
     [Fact]
-    public async Task Save_overwrites_the_opened_file_in_place()
+    public async Task Save_as_never_touches_the_source_file()
     {
         using var tmp = new TempDir();
         var src = tmp.File("a.pdf");
+        var outp = tmp.File("out.pdf");
         PdfFixtures.Create(src, 101, 102, 103);
 
         var dialogs = new FakeFileDialogService();
         dialogs.OpenResults.Enqueue(src);
+        dialogs.SaveResult = outp;
         var vm = new EditorViewModel(new AppServices(dialogs, new StubPdfRenderer()));
         await vm.OpenCommand.ExecuteAsync(null);
 
         vm.SelectSingle(vm.Pages[0]);
         vm.RemoveSelectedCommand.Execute(null);
-        await vm.SaveCommand.ExecuteAsync(null); // SavePath == source -> overwrite
+        await vm.SaveAsCommand.ExecuteAsync(null);
 
-        Assert.Equal([102, 103], PdfFixtures.ReadPageWidths(src));
+        Assert.Equal([102, 103], PdfFixtures.ReadPageWidths(outp)); // edits went to the chosen file
+        Assert.Equal([101, 102, 103], PdfFixtures.ReadPageWidths(src)); // source is untouched
         Assert.False(vm.IsDirty);
     }
 
@@ -94,7 +97,7 @@ public class EditorViewModelTests
     public void Save_disabled_when_no_pages()
     {
         var vm = new EditorViewModel(new AppServices(new FakeFileDialogService(), new StubPdfRenderer()));
-        Assert.False(vm.SaveCommand.CanExecute(null));
+        Assert.False(vm.SaveAsCommand.CanExecute(null));
         Assert.False(vm.AddPdfCommand.CanExecute(null));
         Assert.True(vm.OpenCommand.CanExecute(null));
     }

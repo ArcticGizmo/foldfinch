@@ -15,13 +15,14 @@ what's new after an update.
 - Page thumbnail grid: pages render to cached thumbnails (PDFtoImage/PDFium), one tile per page in
   document order, respecting per-page rotation.
 - Remove and reorder: multi-select (click / Ctrl+click / Shift+click), remove selected pages,
-  drag-and-drop reordering, and multi-level undo/redo. Keyboard: Delete, Ctrl+A, Ctrl+Z, Ctrl+Y.
+  drag-and-drop reordering with a live drop-position indicator, and multi-level undo/redo.
+  Keyboard: Delete, Ctrl+A, Ctrl+Z, Ctrl+Y.
 - Combine PDFs: Add PDF appends another file's pages; when a document spans multiple files, each
   page tile shows a colour-coded source chip so it's clear where every page came from.
 - Rotate pages: rotate the selection clockwise/counter-clockwise (toolbar or Ctrl+R / Ctrl+Shift+R);
-  thumbnails and the saved file reflect the rotation.
-- Safer saving: Save overwrites the opened file in place (written to a temp file and swapped in), or
-  Save As to a new location. Closing with unsaved changes prompts to save, discard, or cancel.
+  thumbnails show rotated pages at the correct aspect ratio and the saved file reflects the rotation.
+- Safer saving: Save As always prompts for a destination, so opened source files are never modified
+  in place. Closing with unsaved changes prompts to save, discard, or cancel.
 - Friendlier errors: password-protected and damaged PDFs report a clear message instead of failing.
 - Packaging: Velopack-based installers for Windows and macOS via a tagged GitHub release, an
   update-available notice on launch, an About dialog with a manual update check, and a "what's new"

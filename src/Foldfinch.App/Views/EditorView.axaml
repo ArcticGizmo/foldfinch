@@ -54,18 +54,28 @@
                                                Foreground="{StaticResource MutedBrush}" />
                                 </StackPanel>
 
-                                <!-- The page. Fixed height keeps the grid tidy regardless of page aspect. -->
-                                <Border Classes="page" Classes.selected="{Binding IsSelected}"
-                                        Background="#FFFFFF" CornerRadius="3" Height="260"
-                                        HorizontalAlignment="Center" ClipToBounds="True"
-                                        BoxShadow="0 1 4 0 #22000000">
-                                    <Panel>
-                                        <TextBlock Text="…" IsVisible="{Binding IsLoading}" FontSize="20"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                   Foreground="{StaticResource MutedBrush}" />
-                                        <Image Source="{Binding Image}" Stretch="Uniform" Margin="6" />
-                                    </Panel>
-                                </Border>
+                                <!-- Fixed-size stage keeps the grid aligned; the white page card inside is sized
+                                     to the thumbnail's own aspect ratio, so rotated (landscape) pages look right. -->
+                                <Panel Height="264">
+                                    <!-- Loading placeholder (portrait card). -->
+                                    <Border IsVisible="{Binding IsLoading}" Width="186" Height="248"
+                                            Background="#FFFFFF" CornerRadius="3" BoxShadow="0 1 4 0 #22000000"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="…" FontSize="20" HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                                    </Border>
+                                    <!-- Loaded page: the card hugs the image (aspect-correct in both orientations). -->
+                                    <Border Classes="page" Classes.selected="{Binding IsSelected}"
+                                            IsVisible="{Binding !IsLoading}"
+                                            Background="#FFFFFF" CornerRadius="3" ClipToBounds="True"
+                                            BoxShadow="0 1 4 0 #22000000"
+                                            MaxWidth="196" MaxHeight="256"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Image Source="{Binding Image}" Stretch="Uniform"
+                                               MaxWidth="196" MaxHeight="256" />
+                                    </Border>
+                                </Panel>
+
                                 <TextBlock Text="{Binding PageNumber}" FontSize="12" HorizontalAlignment="Center"
                                            Foreground="{StaticResource MutedBrush}" />
                             </StackPanel>
@@ -74,5 +84,11 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+
+        <!-- Drag-reorder drop indicator (an insertion line), positioned in code-behind. -->
+        <Canvas x:Name="DropOverlay" IsHitTestVisible="False" IsVisible="{Binding !IsEmpty}">
+            <Border x:Name="DropLine" Width="3" CornerRadius="1.5" IsVisible="False"
+                    Background="{StaticResource AccentBrush}" BoxShadow="0 0 4 0 #552563EB" />
+        </Canvas>
     </Panel>
 </UserControl>

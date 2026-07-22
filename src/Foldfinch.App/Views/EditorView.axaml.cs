@@ -27,6 +27,7 @@ public partial class EditorView : UserControl
         InitializeComponent();
         DragDrop.SetAllowDrop(this, true);
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
+        AddHandler(DragDrop.DragLeaveEvent, (_, _) => HideDropLine());
         AddHandler(DragDrop.DropEvent, OnDrop);
     }
 
@@ -96,34 +97,64 @@ public partial class EditorView : UserControl
         finally
         {
             _isReorderDrag = false;
+            HideDropLine();
         }
     }
 
     private void OnDragOver(object? sender, DragEventArgs e)
     {
         e.DragEffects = _isReorderDrag ? DragDropEffects.Move : DragDropEffects.None;
+        if (_isReorderDrag) ShowDropLine(e);
         e.Handled = true;
     }
 
     private void OnDrop(object? sender, DragEventArgs e)
     {
+        HideDropLine();
         if (Vm is null || !_isReorderDrag) return;
 
-        var root = ItemRoot(e.Source);
-        int target;
-        if (root?.DataContext is PageThumbnailViewModel tile)
-        {
-            target = Vm.Pages.IndexOf(tile);
-            if (e.GetPosition(root).X > root.Bounds.Width / 2) target += 1; // right half = "after"
-        }
-        else
-        {
-            target = Vm.Pages.Count; // dropped on empty canvas -> move to the end
-        }
-
-        Vm.MoveSelectionTo(target);
+        Vm.MoveSelectionTo(DropTarget(e));
         e.Handled = true;
     }
+
+    /// <summary>The insertion index the current pointer position maps to.</summary>
+    private int DropTarget(DragEventArgs e)
+    {
+        if (Vm is null) return 0;
+        var root = ItemRoot(e.Source);
+        if (root?.DataContext is not PageThumbnailViewModel tile) return Vm.Pages.Count; // empty area -> end
+
+        var target = Vm.Pages.IndexOf(tile);
+        if (e.GetPosition(root).X > root.Bounds.Width / 2) target += 1; // right half = "after"
+        return target;
+    }
+
+    /// <summary>Draws the insertion line at the left/right edge of the tile under the pointer.</summary>
+    private void ShowDropLine(DragEventArgs e)
+    {
+        var root = ItemRoot(e.Source);
+        if (root?.DataContext is not PageThumbnailViewModel)
+        {
+            HideDropLine();
+            return;
+        }
+
+        var after = e.GetPosition(root).X > root.Bounds.Width / 2;
+        var edgeX = after ? root.Bounds.Width : 0;
+        var origin = root.TranslatePoint(new Point(edgeX, 0), DropOverlay);
+        if (origin is not { } p)
+        {
+            HideDropLine();
+            return;
+        }
+
+        Canvas.SetLeft(DropLine, p.X - DropLine.Width / 2);
+        Canvas.SetTop(DropLine, p.Y + 6);
+        DropLine.Height = System.Math.Max(0, root.Bounds.Height - 12);
+        DropLine.IsVisible = true;
+    }
+
+    private void HideDropLine() => DropLine.IsVisible = false;
 
     /// <summary>The tile view-model whose visual subtree contains <paramref name="source"/> (or null).</summary>
     private static PageThumbnailViewModel? TileFrom(object? source) =>

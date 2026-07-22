@@ -50,9 +50,6 @@ public partial class EditorViewModel : ViewModelBase
     /// <summary>Display name of the document (first opened file), shown in the summary/title.</summary>
     [ObservableProperty] private string? _documentName;
 
-    /// <summary>Path a plain "Save" writes to; null until the document has been saved once.</summary>
-    [ObservableProperty] private string? _savePath;
-
     /// <summary>True when there are unsaved changes.</summary>
     [ObservableProperty] private bool _isDirty;
 
@@ -81,7 +78,6 @@ public partial class EditorViewModel : ViewModelBase
         {
             _model = model;
             DocumentName = model.Sources[0].DisplayName;
-            SavePath = model.Sources[0].Path; // Save overwrites the opened file (written safely via a temp)
             IsDirty = false;
             _undo.Clear();
             _redo.Clear();
@@ -109,31 +105,23 @@ public partial class EditorViewModel : ViewModelBase
 
     private bool CanAddPdf => NotBusy && HasDocument;
 
-    [RelayCommand(CanExecute = nameof(CanSave))]
-    private async Task SaveAsync()
-    {
-        if (SavePath is null) { await SaveAsAsync(); return; }
-        await SaveTo(SavePath);
-    }
-
     private bool CanSave => NotBusy && HasPages;
 
+    /// <summary>
+    /// Always prompts for a destination (there is no in-place overwrite), so the original source
+    /// files are never silently modified — the user picks where the result goes.
+    /// </summary>
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsAsync()
     {
-        var suggested = System.IO.Path.GetFileNameWithoutExtension(DocumentName ?? "document") + ".pdf";
+        if (_model is null) return;
+        var suggested = System.IO.Path.GetFileNameWithoutExtension(DocumentName ?? "document") + "-edited.pdf";
         var path = await _services.FileDialogs.SavePdfAsync(suggested);
         if (path is null) return;
-        await SaveTo(path);
-    }
 
-    private async Task SaveTo(string path)
-    {
-        if (_model is null) return;
         var model = _model;
         await Do(() => { _services.Editor.Save(model, path); return path; }, saved =>
         {
-            SavePath = saved;
             IsDirty = false;
             Status = $"Saved to {System.IO.Path.GetFileName(saved)}";
         }, "Couldn't save the PDF");
@@ -398,7 +386,6 @@ public partial class EditorViewModel : ViewModelBase
     {
         OpenCommand.NotifyCanExecuteChanged();
         AddPdfCommand.NotifyCanExecuteChanged();
-        SaveCommand.NotifyCanExecuteChanged();
         SaveAsCommand.NotifyCanExecuteChanged();
         SelectAllCommand.NotifyCanExecuteChanged();
         RemoveSelectedCommand.NotifyCanExecuteChanged();
