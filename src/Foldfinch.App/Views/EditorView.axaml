@@ -21,12 +21,12 @@
             <Setter Property="Background" Value="#1A2563EB" />
         </Style>
 
-        <!-- Insert-here "+" affordance: hidden until the cell is hovered. -->
+        <!-- Insert-here "+" affordance: always faintly visible, jumps to full on proximity (hover). -->
         <Style Selector="Button.insert">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Opacity" Value="0" />
+            <Setter Property="Opacity" Value="0.1" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="Transitions">
@@ -35,7 +35,7 @@
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="Grid.cell:pointerover Button.insert">
+        <Style Selector="Button.insert:pointerover">
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Button.insert /template/ ContentPresenter#PART_ContentPresenter">
@@ -80,16 +80,16 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="vm:PageThumbnailViewModel" x:CompileBindings="False">
-                        <Grid Classes="cell" ColumnDefinitions="24,Auto">
-                            <!-- Insert PDF(s) before this page (appears on hover). -->
-                            <Button Grid.Column="0" Classes="insert"
+                        <Grid Classes="cell" ColumnDefinitions="Auto,Auto,Auto">
+                            <!-- Insert PDF(s) before this page. Always faintly visible; full on hover. -->
+                            <Button Grid.Column="0" Classes="insert" Width="32"
                                     Command="{Binding $parent[ItemsControl].DataContext.InsertPdfCommand}"
                                     CommandParameter="{Binding}"
-                                    ToolTip.Tip="Insert PDF here">
-                                <Border Width="22" Height="22" CornerRadius="11" Background="#FFFFFF"
+                                    ToolTip.Tip="Insert PDF(s) here">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#FFFFFF"
                                         BorderBrush="{StaticResource AccentBrush}" BorderThickness="1.5"
                                         VerticalAlignment="Center">
-                                    <TextBlock Text="+" FontSize="15" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                    <TextBlock Text="+" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"
                                                VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
                                 </Border>
                             </Button>
@@ -130,6 +130,18 @@
                                                Foreground="{StaticResource MutedBrush}" />
                                 </StackPanel>
                             </Border>
+
+                            <!-- Trailing "add at end" affordance, only on the last page. -->
+                            <Button Grid.Column="2" Classes="insert" Width="32" IsVisible="{Binding IsLast}"
+                                    Command="{Binding $parent[ItemsControl].DataContext.AddPdfCommand}"
+                                    ToolTip.Tip="Add PDF(s) at the end">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#FFFFFF"
+                                        BorderBrush="{StaticResource AccentBrush}" BorderThickness="1.5"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="+" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                                </Border>
+                            </Button>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

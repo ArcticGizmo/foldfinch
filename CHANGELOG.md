@@ -19,7 +19,8 @@ what's new after an update.
   Keyboard: Delete, Ctrl+A, Ctrl+Z, Ctrl+Y.
 - Combine PDFs: a single Add PDF flow both opens the first file and combines more (no separate
   Open); add one or several files at once. A central Add PDF button appears when nothing is open,
-  and a "+" between pages inserts PDF(s) at that exact spot. When a document spans multiple files,
+  and a faint "+" before every page (and after the last) brightens on hover to insert PDF(s) at
+  that exact spot. When a document spans multiple files,
   each page tile shows a colour-coded source chip so it's clear where every page came from.
 - Rotate pages: rotate the selection clockwise/counter-clockwise (toolbar or Ctrl+R / Ctrl+Shift+R);
   thumbnails show rotated pages at the correct aspect ratio and the saved file reflects the rotation.

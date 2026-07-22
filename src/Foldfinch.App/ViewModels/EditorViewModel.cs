@@ -361,17 +361,20 @@ public partial class EditorViewModel : ViewModelBase
                 .Select((s, i) => (s.Id, Color: SourcePalette[i % SourcePalette.Length]))
                 .ToDictionary(x => x.Id, x => x.Color);
 
+            var count = _model.Pages.Count;
             var number = 1;
             foreach (var pageRef in _model.Pages)
             {
                 var source = _model.FindSource(pageRef.SourceId)!;
-                Pages.Add(new PageThumbnailViewModel(pageRef, source.Path, number++)
+                Pages.Add(new PageThumbnailViewModel(pageRef, source.Path, number)
                 {
                     IsSelected = previouslySelected.Contains(pageRef),
                     ShowSource = showSource,
                     SourceLabel = source.DisplayName,
                     SourceColor = showSource ? colorFor[source.Id] : null,
+                    IsLast = number == count,
                 });
+                number++;
             }
         }
 

@@ -30,6 +30,9 @@ public partial class PageThumbnailViewModel : ViewModelBase
     /// <summary>Whether to show the source chip (true only when the document has multiple sources).</summary>
     public bool ShowSource { get; init; }
 
+    /// <summary>True for the last page — enables the trailing "insert at end" affordance.</summary>
+    public bool IsLast { get; init; }
+
     /// <summary>The rendered thumbnail (null until loaded).</summary>
     [ObservableProperty] private Bitmap? _image;
 
