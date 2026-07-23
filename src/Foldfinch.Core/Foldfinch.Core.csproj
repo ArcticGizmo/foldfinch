@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- PDFtoImage carries [SupportedOSPlatform] annotations; every platform we ship (Windows,
+         macOS) is covered, so the CA1416 "reachable on all platforms" note is noise here. -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Foldfinch.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PDFsharp" Version="6.2.4" />
+    <!-- Rendering page thumbnails: PDFtoImage (MIT) wraps PDFium (BSD-3) + SkiaSharp (MIT). -->
+    <PackageReference Include="PDFtoImage" Version="5.2.1" />
+  </ItemGroup>
+
+</Project>

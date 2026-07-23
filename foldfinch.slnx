@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Foldfinch.Core/Foldfinch.Core.csproj" />
+    <Project Path="src/Foldfinch.App/Foldfinch.App.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Foldfinch.Tests/Foldfinch.Tests.csproj" />
+  </Folder>
+</Solution>

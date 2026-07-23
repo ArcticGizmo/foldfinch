@@ -1,0 +1,103 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Foldfinch.App.ViewModels"
+        x:Class="Foldfinch.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="1180" Height="800"
+        MinWidth="720" MinHeight="480"
+        Background="{StaticResource FormBgBrush}"
+        Icon="/Assets/foldfinch.ico"
+        Title="Foldfinch">
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Delete" Command="{Binding Editor.RemoveSelectedCommand}" />
+        <KeyBinding Gesture="Back" Command="{Binding Editor.RemoveSelectedCommand}" />
+        <KeyBinding Gesture="Ctrl+A" Command="{Binding Editor.SelectAllCommand}" />
+        <KeyBinding Gesture="Ctrl+Z" Command="{Binding Editor.UndoCommand}" />
+        <KeyBinding Gesture="Ctrl+Y" Command="{Binding Editor.RedoCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+Z" Command="{Binding Editor.RedoCommand}" />
+        <KeyBinding Gesture="Ctrl+R" Command="{Binding Editor.RotateClockwiseCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+R" Command="{Binding Editor.RotateCounterClockwiseCommand}" />
+    </Window.KeyBindings>
+
+    <Window.Styles>
+        <!-- Toolbar buttons -->
+        <Style Selector="Button.tool">
+            <Setter Property="Background" Value="{StaticResource ButtonBgBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource FgBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12,7" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.tool:disabled">
+            <Setter Property="Opacity" Value="0.45" />
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
+    </Window.Styles>
+
+    <DockPanel LastChildFill="True">
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top" Background="{StaticResource PanelBgBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="14,10">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Image Source="/Assets/foldfinch.png" Width="24" Height="24" VerticalAlignment="Center" />
+                    <TextBlock Text="Foldfinch" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{StaticResource TitleBrush}" VerticalAlignment="Center"
+                               Margin="2,0,10,0" />
+                    <Button Classes="tool" Content="Add PDF" Command="{Binding Editor.AddPdfCommand}" />
+                    <Border Width="1" Background="{StaticResource BorderBrush}" Margin="4,2" />
+                    <Button Classes="tool" Content="Rotate ⟲" Command="{Binding Editor.RotateCounterClockwiseCommand}" />
+                    <Button Classes="tool" Content="Rotate ⟳" Command="{Binding Editor.RotateClockwiseCommand}" />
+                    <Button Classes="tool" Content="Remove" Command="{Binding Editor.RemoveSelectedCommand}" />
+                    <Button Classes="tool" Content="Undo" Command="{Binding Editor.UndoCommand}" />
+                    <Button Classes="tool" Content="Redo" Command="{Binding Editor.RedoCommand}" />
+                </StackPanel>
+
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Foreground="{StaticResource MutedBrush}" Text="{Binding Editor.DocumentName}" />
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Classes="tool" Content="About" Click="OnAboutClick" />
+                    <Border Width="1" Background="{StaticResource BorderBrush}" Margin="4,2" />
+                    <Button Classes="tool primary" Content="Save As…" Command="{Binding Editor.SaveAsCommand}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Update-available notice (notification only; does not auto-update) -->
+        <Border DockPanel.Dock="Top" Padding="16,8" Background="{StaticResource AccentBrush}"
+                IsVisible="{Binding UpdateNotice, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding UpdateNotice}" Foreground="#FFFFFF"
+                           VerticalAlignment="Center" TextWrapping="Wrap" />
+                <Button Grid.Column="1" Content="Dismiss" Command="{Binding DismissUpdateNoticeCommand}"
+                        Background="Transparent" Foreground="#FFFFFF" />
+            </Grid>
+        </Border>
+
+        <!-- Status bar -->
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource PanelBgBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="14,6">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="12"
+                           Foreground="{StaticResource MutedBrush}" Text="{Binding Editor.Status}" />
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="12" Margin="0,0,12,0"
+                           Foreground="{StaticResource AccentBrush}"
+                           Text="{Binding Editor.SelectionCount, StringFormat='{}{0} selected'}"
+                           IsVisible="{Binding Editor.HasSelection}" />
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="12"
+                           Foreground="{StaticResource MutedBrush}"
+                           Text="{Binding Editor.PageCount, StringFormat='{}{0} pages'}"
+                           IsVisible="{Binding !Editor.IsEmpty}" />
+            </Grid>
+        </Border>
+
+        <!-- Editor surface -->
+        <ContentControl Content="{Binding Editor}" />
+    </DockPanel>
+</Window>

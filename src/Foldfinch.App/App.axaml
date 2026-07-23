@@ -1,0 +1,31 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="using:System"
+             xmlns:local="clr-namespace:Foldfinch.App"
+             x:Class="Foldfinch.App.App"
+             RequestedThemeVariant="Light">
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+
+    <Application.Resources>
+        <!-- Light palette. PDFs are white, so the canvas is a soft grey and pages/panels are white. -->
+        <SolidColorBrush x:Key="FormBgBrush" Color="#F3F3F6" />
+        <SolidColorBrush x:Key="PanelBgBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="CanvasBgBrush" Color="#E9E9EF" />
+        <SolidColorBrush x:Key="FgBrush" Color="#1F2430" />
+        <SolidColorBrush x:Key="TitleBrush" Color="#11131A" />
+        <SolidColorBrush x:Key="MutedBrush" Color="#6B7280" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#2563EB" />
+        <SolidColorBrush x:Key="BorderBrush" Color="#E2E2E8" />
+        <SolidColorBrush x:Key="ButtonBgBrush" Color="#EDEDF2" />
+        <SolidColorBrush x:Key="OkBrush" Color="#16A34A" />
+        <SolidColorBrush x:Key="WarnBrush" Color="#D97706" />
+        <SolidColorBrush x:Key="DangerBrush" Color="#DC2626" />
+    </Application.Resources>
+</Application>

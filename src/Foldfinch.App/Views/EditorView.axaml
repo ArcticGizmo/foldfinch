@@ -1,0 +1,157 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Foldfinch.App.ViewModels"
+             x:Class="Foldfinch.App.Views.EditorView"
+             x:DataType="vm:EditorViewModel">
+
+    <UserControl.Styles>
+        <!-- Page tile frame; turns into an accent-bordered card when selected. -->
+        <Style Selector="Border.page">
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Border.page.selected">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="Border.selband">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Border.selband.selected">
+            <Setter Property="Background" Value="#1A2563EB" />
+        </Style>
+
+        <!-- Insert-here "+" affordance: always faintly visible, jumps to full on proximity (hover). -->
+        <Style Selector="Button.insert">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Opacity" Value="0.1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.insert:pointerover">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.insert /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <!-- Big dashed "Add" tile shown centred in the empty state. -->
+        <Style Selector="Button.addTile">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="28,22" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
+
+    <Panel Background="{StaticResource CanvasBgBrush}">
+        <!-- Empty state: a big central "Add PDF" call to action. -->
+        <StackPanel IsVisible="{Binding IsEmpty}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Spacing="16" MaxWidth="440">
+            <Button Classes="addTile" Command="{Binding AddPdfCommand}">
+                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                    <Border Width="52" Height="52" CornerRadius="26" Background="#EFF3FE" HorizontalAlignment="Center">
+                        <TextBlock Text="+" FontSize="30" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                    </Border>
+                    <TextBlock Text="Add PDF" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"
+                               Foreground="{StaticResource TitleBrush}" />
+                </StackPanel>
+            </Button>
+            <TextBlock Text="Add one or more PDFs to remove, reorder, or rotate their pages — or combine several into one."
+                       TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+        </StackPanel>
+
+        <!-- Page grid. Drag a page to reorder; click / Ctrl+click / Shift+click to select. -->
+        <ScrollViewer IsVisible="{Binding !IsEmpty}" Padding="20" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Pages}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:PageThumbnailViewModel" x:CompileBindings="False">
+                        <Grid Classes="cell" ColumnDefinitions="Auto,Auto,Auto">
+                            <!-- Insert PDF(s) before this page. Always faintly visible; full on hover. -->
+                            <Button Grid.Column="0" Classes="insert" Width="32"
+                                    Command="{Binding $parent[ItemsControl].DataContext.InsertPdfCommand}"
+                                    CommandParameter="{Binding}"
+                                    ToolTip.Tip="Insert PDF(s) here">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#FFFFFF"
+                                        BorderBrush="{StaticResource AccentBrush}" BorderThickness="1.5"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="+" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                                </Border>
+                            </Button>
+
+                            <Border Grid.Column="1" Classes="selband" Classes.selected="{Binding IsSelected}"
+                                    CornerRadius="8" Padding="8" Margin="0,4,4,4">
+                                <StackPanel Width="200" Spacing="6">
+                                    <!-- Source chip: only shown when the document combines multiple files. -->
+                                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center"
+                                                IsVisible="{Binding ShowSource}">
+                                        <Border Width="9" Height="9" CornerRadius="5" VerticalAlignment="Center"
+                                                Background="{Binding SourceColor}" />
+                                        <TextBlock Text="{Binding SourceLabel}" FontSize="11" MaxWidth="165"
+                                                   TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource MutedBrush}" />
+                                    </StackPanel>
+
+                                    <!-- Fixed stage keeps rows aligned; the white card is sized to the thumbnail's
+                                         aspect ratio, so rotated (landscape) pages look right. -->
+                                    <Panel Height="264">
+                                        <Border IsVisible="{Binding IsLoading}" Width="186" Height="248"
+                                                Background="#FFFFFF" CornerRadius="3" BoxShadow="0 1 4 0 #22000000"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock Text="…" FontSize="20" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                                        </Border>
+                                        <Border Classes="page" Classes.selected="{Binding IsSelected}"
+                                                IsVisible="{Binding !IsLoading}"
+                                                Background="#FFFFFF" CornerRadius="3" ClipToBounds="True"
+                                                BoxShadow="0 1 4 0 #22000000"
+                                                MaxWidth="196" MaxHeight="256"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image Source="{Binding Image}" Stretch="Uniform" MaxWidth="196" MaxHeight="256" />
+                                        </Border>
+                                    </Panel>
+
+                                    <TextBlock Text="{Binding PageNumber}" FontSize="12" HorizontalAlignment="Center"
+                                               Foreground="{StaticResource MutedBrush}" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Trailing "add at end" affordance, only on the last page. -->
+                            <Button Grid.Column="2" Classes="insert" Width="32" IsVisible="{Binding IsLast}"
+                                    Command="{Binding $parent[ItemsControl].DataContext.AddPdfCommand}"
+                                    ToolTip.Tip="Add PDF(s) at the end">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#FFFFFF"
+                                        BorderBrush="{StaticResource AccentBrush}" BorderThickness="1.5"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="+" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                                </Border>
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Drag-reorder drop indicator (an insertion line), positioned in code-behind. -->
+        <Canvas x:Name="DropOverlay" IsHitTestVisible="False" IsVisible="{Binding !IsEmpty}">
+            <Border x:Name="DropLine" Width="3" CornerRadius="1.5" IsVisible="False"
+                    Background="{StaticResource AccentBrush}" BoxShadow="0 0 4 0 #552563EB" />
+        </Canvas>
+    </Panel>
+</UserControl>
