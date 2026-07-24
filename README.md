@@ -60,8 +60,8 @@ Download `Foldfinch-win-Setup.exe` and run it.
 
 ### macOS (unsigned)
 
-1. Download the macOS build for your Mac — the **Apple Silicon (`osx-arm64`)** package on M-series
-   Macs, or the **Intel (`osx-x64`)** package on older ones.
+1. Download the package for your Mac — **`Foldfinch-osx-arm64-Setup.pkg`** on Apple Silicon (M-series)
+   Macs, or **`Foldfinch-osx-x64-Setup.pkg`** on Intel ones.
 2. Open it and drag **Foldfinch** to your **Applications** folder.
 3. Clear the quarantine flag (see below), then launch Foldfinch from Applications.
 

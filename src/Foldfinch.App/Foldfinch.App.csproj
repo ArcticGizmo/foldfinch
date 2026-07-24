@@ -10,7 +10,7 @@
     <Product>Foldfinch</Product>
     <Company>Foldfinch</Company>
     <Description>Basic PDF operations: remove, combine, reorder, and rotate pages.</Description>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\foldfinch.ico</ApplicationIcon>

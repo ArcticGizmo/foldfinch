@@ -11,6 +11,13 @@ permissions:
 # Tag-triggered Velopack release. Foldfinch ships for Windows and macOS, so a matrix builds, packs,
 # and uploads per-OS installers to the same GitHub Release. PDFium/SkiaSharp native assets are
 # pulled in per-RID by the self-contained publish.
+#
+# Each RID packs into its OWN Velopack channel (== the RID). Without this both macOS RIDs default to
+# the shared `osx` channel and produce identically-named assets (Foldfinch-osx-Setup.pkg,
+# Foldfinch-<v>-osx-full.nupkg, releases.osx.json) — so the two jobs clobber each other on the single
+# GitHub Release. A distinct channel suffixes every file apart. At runtime a null-channel UpdateManager
+# auto-detects the channel the build was made for, so the in-app updater needs no change. Windows keeps
+# the legacy `win` channel (its filenames are already unique).
 jobs:
   release:
     strategy:
@@ -19,12 +26,15 @@ jobs:
         include:
           - os: windows-latest
             rid: win-x64
+            channel: win
             mainExe: foldfinch.exe
           - os: macos-latest
             rid: osx-arm64
+            channel: osx-arm64
             mainExe: foldfinch
           - os: macos-13
             rid: osx-x64
+            channel: osx-x64
             mainExe: foldfinch
     runs-on: ${{ matrix.os }}
     steps:
@@ -58,9 +68,16 @@ jobs:
             --packId Foldfinch \
             --packTitle "Foldfinch" \
             --packVersion ${{ steps.version.outputs.VERSION }} \
+            --channel ${{ matrix.channel }} \
             --packDir publish/ \
             --mainExe ${{ matrix.mainExe }} \
             --outputDir releases/
+
+      # Drop the portable .zip — we ship the Setup installer plus the Velopack update feed
+      # (nupkg + RELEASES + releases.*.json), not the loose portable build.
+      - name: Drop portable .zip (not shipped)
+        shell: bash
+        run: rm -f releases/*-Portable.zip
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
